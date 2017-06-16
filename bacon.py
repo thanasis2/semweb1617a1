@@ -1,6 +1,7 @@
 from urllib.request import urlopen,Request
 from urllib.parse import urlencode
 import json
+import sys
 
 endpoint = "http://data.linkedmdb.org/sparql?"
 
@@ -47,6 +48,10 @@ for binding in jso['results']['bindings']:
             aname = bcontent['value']
             actors.append([aid, aname])
 
+if not actors:
+    print("No actors found!")
+    sys.exit(0)
+	
 for actor in actors:
     print("%s -> %s" % (actor[0], actor[1]))
 
@@ -56,7 +61,6 @@ sparqlq = """
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX movie: <http://data.linkedmdb.org/resource/movie/>
 SELECT ?actname ?mtitle WHERE {
-?film movie:filmid ?mid.
 ?film movie:actor ?mactor.
 ?film rdfs:label ?mtitle.
 ?film movie:actor <http://data.linkedmdb.org/resource/actor/"""+str(aid)+"""> .
@@ -85,7 +89,7 @@ page.close()
 # convert to json object
 jso = json.loads(text)
 
-actors = []
+coactors = []
 # iterate over results
 for binding in jso['results']['bindings']:
     # for every column in binding
@@ -94,7 +98,12 @@ for binding in jso['results']['bindings']:
             actname = bcontent['value']
         elif bname == "mtitle":
             mtitle = bcontent['value']
-            actors.append([actname, mtitle])
+            coactors.append([actname, mtitle])
 
-for actor in actors:
-    print("   %s -> %s" % (actor[0], actor[1]))
+if not coactors:
+    print("There were no co-actors found!")
+    sys.exit(0)
+
+print("The co-actors are: ")
+for actor in coactors:
+    print("   %s in %s" % (actor[0], actor[1]))
